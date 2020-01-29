@@ -1,0 +1,25 @@
+{
+  "name": "gite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "momo.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rnrudxo2872/te1.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rnrudxo2872/te1/issues"
+  },
+  "homepage": "https://github.com/rnrudxo2872/te1#readme",
+  "dependencies": {
+    "sanitize-html": "^1.21.1"
+  }
+}
