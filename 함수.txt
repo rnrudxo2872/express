@@ -1,2 +1,0 @@
- function declaration        --->   funciton(){}
- Arrow Function              --->   () => {}
