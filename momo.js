@@ -17,80 +17,15 @@ var app = http.createServer(function (request, response) {
 
   } 
 
-  } else if (pathname === '/create_process') {
-    var body = '';
-    request.on('data', function (data) {
-      body += data; //조각조각 데이터가 들어옴
-    })
-    request.on('end', function () {
-      var post = qs.parse(body);
-      title = post.title;
-      description = post.description;
-      fs.writeFile(`./data/${title}`, description, (err) => {
-        response.writeHead(302, {
-          Location: `/?id=${title}`
-        }); //redirect
-        response.end();
-      })
+
     })
   } else if (pathname === '/updata') {
-    fs.readdir('./data', function (error, filelist) {
-      title = queryData.id;
-      filleredId = path.parse(queryData.id).base;
-      list = template.list(filelist, ``);
-      fs.readFile(`data/${filleredId}`, 'utf8', function (err, descrip) {
-        var html = template.HTML(title, list, `<form action="/updata_process" method="POST">
-          <input type="hidden" name="id" value="${title}">
-          <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-          <p>
-              <textarea name="description" id="" cols="30" rows="10" placeholder="discription">${descrip}</textarea>
-          </p>
-          <p>
-              <input type="submit">
-          </p>
-      </form>`)
-
-        response.writeHead(200);
-        response.end(html);
-      });
-    });
+    
   } else if (pathname === '/updata_process') {
-    var body = '';
-    request.on('data', function (data) {
-      body += data;
-    })
-    request.on('end', function () {
-      var post = qs.parse(body);
-      title = post.title;
-      var id = post.id;
-      description = post.description;
-      fs.rename(`./data/${id}`, `./data/${title}`, (err) => {
-        fs.writeFile(`./data/${title}`, description, 'utf8', (err) => {
-          response.writeHead(302, {
-            Location: `/?id=${title}`
-          }); //redirect
-          response.end();
-        })
-      })
-
-    })
+    
 
   } else if (pathname === '/delete_process') {
-    var body = '';
-    request.on('data', function (data) {
-      body += data;
-    })
-    request.on('end', function () {
-      var post = qs.parse(body);
-      var id = post.id;
-      filleredId = path.parse(id).base;
-      fs.unlink(`data/${id}`, (err) => {
-        response.writeHead(302, {
-          Location: `/`
-        }); //redirect
-        response.end();
-      })
-    })
+
 
   } else {
     response.writeHead(404);
@@ -128,10 +63,10 @@ app.get('/', (req, res) => {
 app.get('/page/:pageId', (req, res) => {
   fs.readdir('./data', function (error, filelist) {
     title = req.params.pageId;
-    let filleredId = path.parse(req.params.pageId).base;
+    let filleredId = path.parse(req.params.pageId).base; //return confirm 해야지 false 시 페이지가 안넘어감
     list = template.list(filelist, `<a href="/page_create">create</a><br>
-                                <a href="/updata?id=${title}">updata</a><br>
-                                <form action="delete_process" method="POST" onsubmit="confirm('정말로 삭제하시겠습니까?')">
+                                <a href="/updata/${title}">updata</a><br>
+                                <form action="/delete_process" method="POST" onsubmit="return confirm('정말로 삭제하시겠습니까?')">
                                 <input type="hidden" name="id" value="${title}">
                                 <input type="submit" value="delete">
                                 </form>`);
@@ -173,23 +108,77 @@ app.get('/page_create', (req, res) => {
   })
 })
 
-app.post('/create_process',(req,res) =>{
+app.post('/create_process', (req, res) => {
   var body = '';
-req.on('data', function (data) {
-  body += data; //조각조각 데이터가 들어옴
-})
-req.on('end', function () {
-  var post = qs.parse(body);
-  title = post.title;
-  description = post.description;
-  fs.writeFile(`./data/${title}`, description, (err) => {
-    res.writeHead(302, {
-      Location: `/page/${title}`
-    }); //redirect
-    res.end();
+  req.on('data', function (data) {
+    body += data; //조각조각 데이터가 들어옴
+  })
+  req.on('end', function () {
+    var post = qs.parse(body);
+    title = post.title;
+    description = post.description;
+    fs.writeFile(`./data/${title}`, description, (err) => {
+      res.redirect(302, `/page/${title}`) //redirect과정 = res.writeHead(302, {Location: `/page/${title}) 
+      res.end();
+    })
   })
 })
 
+app.get('/updata/:pageId', (req, res) => {
+  fs.readdir('./data', function (error, filelist) {
+    title = req.params.pageId;
+    filleredId = path.parse(req.params.pageId).base;
+    list = template.list(filelist, ``);
+    fs.readFile(`data/${filleredId}`, 'utf8', function (err, descrip) {
+      var html = template.HTML(title, list, `<form action="/updata_process" method="POST">
+        <input type="hidden" name="id" value="${title}">
+        <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+        <p>
+            <textarea name="description" id="" cols="30" rows="10" placeholder="discription">${descrip}</textarea>
+        </p>
+        <p>
+            <input type="submit">
+        </p>
+    </form>`)
+
+      res.send(html);
+    });
+  });
+})
+
+app.post('/updata_process', (req, res) => {
+  var body = '';
+  req.on('data', function (data) {
+    body += data;
+  })
+  req.on('end', function () {
+    var post = qs.parse(body);
+    title = post.title;
+    var id = post.id;
+    description = post.description;
+    fs.rename(`./data/${id}`, `./data/${title}`, (err) => {
+      fs.writeFile(`./data/${title}`, description, 'utf8', (err) => {
+        res.redirect(302,`/page/${title}`); //redirect
+        res.end();
+      })
+    })
+  })
+})
+
+app.post('/delete_process',(req,res) => {
+  var body = '';
+  req.on('data', function (data) {
+    body += data;
+  })
+  req.on('end', function () {
+    var post = qs.parse(body);
+    var id = post.id;
+    filleredId = path.parse(id).base;
+    fs.unlink(`data/${id}`, (err) => {
+      res.redirect(302,`/`);
+      res.end();
+    })
+  })
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
