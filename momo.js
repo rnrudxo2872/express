@@ -8,7 +8,8 @@ var qs = require('querystring');
 var bodyParser = require('body-parser');
 var compression = require('compression');
 
-app.use(compression());
+app.use(compression());//Content-Encoding: gzip zip으로 압축하고 보내고 웹브라우저는 해제해서 사용
+                      //데이터 트레픽 줄음
 app.use(bodyParser.urlencoded({ extended: false }));//form data는 이런형식
                                                   //미들웨어 표시
                                                   //post 데이터를 내부적으로 분석해서
