@@ -1,38 +1,3 @@
-/* var http = require('http');
-var fs = require('fs');
-var url = require('url');
-var qs = require('querystring');
-let template = require('./lib/template.js');
-var path = require('path');
-var sanitizeHtml = require('sanitize-html');
-
-
-var app = http.createServer(function (request, response) {
-  var _url = request.url;
-  var queryData = url.parse(_url, true).query;
-  var pathname = url.parse(_url, true).pathname;
-  let title = undefined;
-  if (pathname === '/') {
-    if (queryData.id === undefined) {
-
-  } 
-
-
-    })
-  } else if (pathname === '/updata') {
-    
-  } else if (pathname === '/updata_process') {
-    
-
-  } else if (pathname === '/delete_process') {
-
-
-  } else {
-    response.writeHead(404);
-    response.end('Not found');
-  }
-});
-app.listen(3000); */
 let express = require('express');
 let app = express();
 var fs = require('fs');
@@ -40,6 +5,14 @@ let template = require('./lib/template.js');
 var sanitizeHtml = require('sanitize-html');
 var path = require('path');
 var qs = require('querystring');
+var bodyParser = require('body-parser')
+
+app.use(bodyParser.urlencoded({ extended: false }));//form data는 이런형식
+                                                  //미들웨어 표시
+                                                  //post 데이터를 내부적으로 분석해서
+                                                  //모든데이터를 가져온 다음에
+                                                  //경로에 해당되는 callback을 호출함
+                                                  //첫번째 인자인 req 뒤 body를 만들어줌
 
 const port = 3000;
 
@@ -109,7 +82,7 @@ app.get('/page_create', (req, res) => {
 })
 
 app.post('/create_process', (req, res) => {
-  var body = '';
+  /*var body = '';
   req.on('data', function (data) {
     body += data; //조각조각 데이터가 들어옴
   })
@@ -121,6 +94,13 @@ app.post('/create_process', (req, res) => {
       res.redirect(302, `/page/${title}`) //redirect과정 = res.writeHead(302, {Location: `/page/${title}) 
       res.end();
     })
+  })*/
+  var post = req.body;
+  title = post.title;
+  description = post.description;
+  fs.writeFile(`./data/${title}`, description, (err) => {
+    res.redirect(302, `/page/${title}`) //redirect과정 = res.writeHead(302, {Location: `/page/${title}) 
+    res.end();
   })
 })
 
@@ -147,7 +127,7 @@ app.get('/updata/:pageId', (req, res) => {
 })
 
 app.post('/updata_process', (req, res) => {
-  var body = '';
+  /*var body = '';
   req.on('data', function (data) {
     body += data;
   })
@@ -162,11 +142,21 @@ app.post('/updata_process', (req, res) => {
         res.end();
       })
     })
-  })
+  })*/
+  var post = req.body;
+    title = post.title;
+    var id = post.id;
+    description = post.description;
+    fs.rename(`./data/${id}`, `./data/${title}`, (err) => {
+      fs.writeFile(`./data/${title}`, description, 'utf8', (err) => {
+        res.redirect(302,`/page/${title}`); //redirect
+        res.end();
+      })
+    })
 })
 
 app.post('/delete_process',(req,res) => {
-  var body = '';
+  /*var body = '';
   req.on('data', function (data) {
     body += data;
   })
@@ -178,6 +168,13 @@ app.post('/delete_process',(req,res) => {
       res.redirect(302,`/`);
       res.end();
     })
+  })*/
+  var post = req.body;
+  var id = post.id;
+  filleredId = path.parse(id).base;
+  fs.unlink(`data/${id}`, (err) => {
+    res.redirect(302,`/`);
+    res.end();
   })
 })
 
