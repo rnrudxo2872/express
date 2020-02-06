@@ -5,8 +5,10 @@ let template = require('./lib/template.js');
 var sanitizeHtml = require('sanitize-html');
 var path = require('path');
 var qs = require('querystring');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
+var compression = require('compression');
 
+app.use(compression());
 app.use(bodyParser.urlencoded({ extended: false }));//form data는 이런형식
                                                   //미들웨어 표시
                                                   //post 데이터를 내부적으로 분석해서
