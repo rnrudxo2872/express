@@ -17,13 +17,19 @@ app.use(bodyParser.urlencoded({ extended: false }));//form data는 이런형식
                                                   //경로에 해당되는 callback을 호출함
                                                   //첫번째 인자인 req 뒤 body를 만들어줌
 
+app.get('*',function(req,res,next){
+  fs.readdir('./data', function (error, filelist) {
+  req.list = filelist;
+  next();
+  })
+}) //middleware 작성
+
 const port = 3000;
 
 app.get('/', (req, res) => {
-  fs.readdir('./data', function (error, filelist) {
     title = `Welcome to 경태's page`;
     let descrip = '안녕? 경태페이지란다';
-    var list = template.list(filelist, ``);
+    var list = template.list(req.list, ``);
     var html = template.HTML(title, list, `<div id="article">
     <h2>${title}</h2>
     <p>
@@ -34,13 +40,12 @@ app.get('/', (req, res) => {
   </div>`)
 
     res.send(html);
-  })
+
 }) //route,routing 갈림길에서 적당한 응답을 해주는 역할
 app.get('/page/:pageId', (req, res) => {
-  fs.readdir('./data', function (error, filelist) {
     title = req.params.pageId;
     let filleredId = path.parse(req.params.pageId).base; //return confirm 해야지 false 시 페이지가 안넘어감
-    list = template.list(filelist, `<a href="/page_create">create</a><br>
+    list = template.list(req.list, `<a href="/page_create">create</a><br>
                                 <a href="/updata/${title}">updata</a><br>
                                 <form action="/delete_process" method="POST" onsubmit="return confirm('정말로 삭제하시겠습니까?')">
                                 <input type="hidden" name="id" value="${title}">
@@ -62,14 +67,12 @@ app.get('/page/:pageId', (req, res) => {
 
       res.send(html)
     })
-  })
 })
 
 app.get('/page_create', (req, res) => {
-  fs.readdir('./data', function (error, filelist) {
     title = `WEB - create`;
     let descrip = '안녕? 경태페이지란다';
-    var list = template.list(filelist, ``);
+    var list = template.list(req.list, ``);
     var html = template.HTML(title, list, `<form action="/create_process" method="POST">
     <p><input type="text" name="title" placeholder="title"></p>
     <p>
@@ -81,7 +84,6 @@ app.get('/page_create', (req, res) => {
 </form>`)
 
     res.send(html);
-  })
 })
 
 app.post('/create_process', (req, res) => {
@@ -108,10 +110,9 @@ app.post('/create_process', (req, res) => {
 })
 
 app.get('/updata/:pageId', (req, res) => {
-  fs.readdir('./data', function (error, filelist) {
     title = req.params.pageId;
     filleredId = path.parse(req.params.pageId).base;
-    list = template.list(filelist, ``);
+    list = template.list(req.list, ``);
     fs.readFile(`data/${filleredId}`, 'utf8', function (err, descrip) {
       var html = template.HTML(title, list, `<form action="/updata_process" method="POST">
         <input type="hidden" name="id" value="${title}">
@@ -126,7 +127,6 @@ app.get('/updata/:pageId', (req, res) => {
 
       res.send(html);
     });
-  });
 })
 
 app.post('/updata_process', (req, res) => {
