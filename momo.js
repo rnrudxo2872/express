@@ -20,9 +20,9 @@ app.use(bodyParser.urlencoded({ extended: false }));//form data는 이런형식
 app.get('*',function(req,res,next){
   fs.readdir('./data', function (error, filelist) {
   req.list = filelist;
-  next();
-  })
-}) //middleware 작성
+  next(); //다음 middleware를 동작하게 결정 한다. 
+  }) //함수를 또 작성할 수 있음. if로 어떤 미들웨어가 실행될지 조건을 걸 수도있다.
+}) //middleware 작성 application-level middleware (use, get)
 
 const port = 3000;
 
