@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
     res.send(html);
 
 }) //route,routing 갈림길에서 적당한 응답을 해주는 역할
-app.get('/page/:pageId', (req, res) => {
+app.get('/page/:pageId', (req, res, next) => {
     title = req.params.pageId;
     let filleredId = path.parse(req.params.pageId).base; //return confirm 해야지 false 시 페이지가 안넘어감
     list = template.list(req.list, `<a href="/page_create">create</a><br>
@@ -56,22 +56,26 @@ app.get('/page/:pageId', (req, res) => {
                                 <input type="submit" value="delete">
                                 </form>`);
     fs.readFile(`data/${filleredId}`, 'utf8', function (err, descrip) {
-      let sanitizedTitle = sanitizeHtml(title);
-      let sanitizedDiscript = sanitizeHtml(descrip, {
-        allowedTags: ['h1', 'h2'] //여기 허락된 태그는 sanitize(살균)를 안한다.
-      }, {
-        allowedIframeHostnames: ['www.youtube.com']
-      });
-      var html = template.HTML(sanitizedTitle, list, `<div id="article">
-      <img src="/images/${sanitizedTitle}.jpg" alt="" style="width:300px; display:block; margin-bottom: 5px;">
-      <h2>${sanitizedTitle}</h2>
-      <p>
-      ${sanitizedDiscript}
-     </p>
-    </div>`)
-      console.log(sanitizedTitle)
-      res.send(html)
-    })
+      if(err){
+        next(err);
+      }else{
+        let sanitizedTitle = sanitizeHtml(title);
+        let sanitizedDiscript = sanitizeHtml(descrip, {
+          allowedTags: ['h1', 'h2'] //여기 허락된 태그는 sanitize(살균)를 안한다.
+        }, {
+          allowedIframeHostnames: ['www.youtube.com']
+        });
+        var html = template.HTML(sanitizedTitle, list, `<div id="article">
+        <img src="/images/${sanitizedTitle}.jpg" alt="" style="width:300px; display:block; margin-bottom: 5px;">
+        <h2>${sanitizedTitle}</h2>
+        <p>
+        ${sanitizedDiscript}
+       </p>
+      </div>`)
+        console.log(sanitizedTitle)
+        res.send(html)
+    }
+  }) 
 })
 
 app.get('/page_create', (req, res) => {
@@ -185,5 +189,14 @@ app.post('/delete_process',(req,res) => {
     res.end();
   })
 })
+
+app.use(function(req,res,next){
+  res.status(404).send('Sorry you wrong')
+})
+
+app.use(function (err, req, res, next) { //err인자 값이 있을시 호출
+  console.error(err.stack)
+  res.status(500).send('Something broke! (ex. address wrong)')
+});
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
