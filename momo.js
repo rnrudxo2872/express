@@ -24,6 +24,8 @@ app.get('*',function(req,res,next){
   }) //함수를 또 작성할 수 있음. if로 어떤 미들웨어가 실행될지 조건을 걸 수도있다.
 }) //middleware 작성 application-level middleware (use, get)
 
+app.use(express.static('public')); //public 디렉토리 안에서 static 파일을 찾겠다.
+
 const port = 3000;
 
 app.get('/', (req, res) => {
@@ -59,6 +61,7 @@ app.get('/page/:pageId', (req, res) => {
         allowedIframeHostnames: ['www.youtube.com']
       });
       var html = template.HTML(sanitizedTitle, list, `<div id="article">
+      <img src="/images/sun.jpg" alt="" style="width:300px; display:block; margin-bottom: 5px;">
       <h2>${sanitizedTitle}</h2>
       <p>
       ${sanitizedDiscript}
