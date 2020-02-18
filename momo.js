@@ -7,6 +7,8 @@ var compression = require('compression')
 var template = require('./lib/template.js');
 var topicRouter = require('./routes/topic');
 var indexRouter = require('./routes/index');
+var helmet = require('helmet');
+app.use(helmet());
 
 
 app.use(compression());//Content-Encoding: gzip zip으로 압축하고 보내고 웹브라우저는 해제해서 사용
